@@ -1,101 +1,91 @@
-import React from 'react';
-import moment from 'moment';
+import React, { useState } from 'react';
 
-import {
-  Layout,
-  Comment,
-  Avatar,
-  Tooltip,
-  Form,
-  Button,
-  Input,
-  Icon,
-} from 'antd';
+import { Layout, Comment, Avatar, Form, Input } from 'antd';
 import logo from '../../images/logo.png';
-import { Container, Header } from './styles';
+import engenheiro from '../../images/engenheiro.png';
+import { Container, Header, FormLayout, CommentLayout } from './styles';
 
 export default function Chat() {
   const { Content } = Layout;
   const { TextArea } = Input;
 
+  const [newMessage, setNewMessage] = useState('');
+
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      author: 'Francisco',
+      type: 'bot',
+      avatar: <Avatar src={engenheiro} />,
+      content: 'Olá, bem vindo, por favor informe qual o tipo de edital.',
+    },
+  ]);
+
+  function handleSubmit() {
+    setMessages([
+      ...messages,
+      {
+        id: messages.length + 1,
+        author: 'Você',
+        type: 'user',
+        avatar: <Avatar icon="user" />,
+        content: newMessage,
+      },
+    ]);
+
+    setTimeout(() => {
+      window.document
+        .getElementById('messages')
+        .scrollTo(0, window.document.getElementById('messages').scrollHeight);
+    });
+    setNewMessage('');
+  }
+
   return (
     <Container>
       <Layout>
-        <Layout>
-          <Header>
-            <img src={logo} alt="logo" className="logo" />
-            <div className="engenheiro" />
-          </Header>
-          <Content
-            style={{
-              margin: '20px 10px',
-              padding: 10,
-              background: '#fff',
-              minHeight: 380,
-            }}
-          >
-            <Comment
-              author={<>Han Solo</>}
-              avatar={
-                <Avatar
-                  src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
-                  alt="Han Solo"
+        <Header>
+          <img src={logo} alt="logo" className="logo" />
+          <div className="engenheiro" />
+        </Header>
+        <Content
+          id="messages"
+          style={{
+            margin: '20px 10px',
+            padding: 10,
+            background: '#fff',
+            height: 300,
+            scrollBehavior: 'smooth',
+            overflowY: 'auto',
+          }}
+        >
+          {messages.map(message => {
+            return (
+              <CommentLayout type={message.type}>
+                <Comment
+                  key={message.id}
+                  author={<>{message.author}</>}
+                  avatar={message.avatar}
+                  content={<p>{message.content}</p>}
                 />
-              }
-              content={
-                <p>
-                  We supply a series of design principles, practical patterns
-                  and high quality design resources (Sketch and Axure), to help
-                  people create their product prototypes beautifully and
-                  efficiently.
-                </p>
-              }
-              datetime={
-                <Tooltip title={moment().format('YYYY-MM-DD HH:mm:ss')}>
-                  <span>{moment().fromNow()}</span>
-                </Tooltip>
-              }
+              </CommentLayout>
+            );
+          })}
+        </Content>
+        <FormLayout onSubmit={handleSubmit}>
+          <Form.Item>
+            <TextArea
+              onPressEnter={event => {
+                event.preventDefault();
+                handleSubmit();
+              }}
+              placeholder="digite aqui sua mensagem..."
+              rows={4}
+              onChange={e => setNewMessage(e.target.value)}
+              value={newMessage}
             />
-            <Comment
-              author={<>Han Solo</>}
-              avatar={
-                <Avatar
-                  src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
-                  alt="Han Solo"
-                />
-              }
-              content={
-                <p>
-                  We supply a series of design principles, practical patterns
-                  and high quality design resources (Sketch and Axure), to help
-                  people create their product prototypes beautifully and
-                  efficiently.
-                </p>
-              }
-              datetime={
-                <Tooltip title={moment().format('YYYY-MM-DD HH:mm:ss')}>
-                  <span>{moment().fromNow()}</span>
-                </Tooltip>
-              }
-            />
-            <div>
-              <Form.Item>
-                <TextArea rows={4} onChange={() => {}} value />
-              </Form.Item>
-              <Form.Item>
-                <Button
-                  htmlType="submit"
-                  loading={false}
-                  onClick={() => {}}
-                  type="primary"
-                >
-                  Enviar mensagem
-                  <Icon type="message" />
-                </Button>
-              </Form.Item>
-            </div>
-          </Content>
-        </Layout>
+          </Form.Item>
+        </FormLayout>
       </Layout>
     </Container>
   );
