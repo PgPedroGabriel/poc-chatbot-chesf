@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import { Layout, Comment, Avatar, Form, Input } from 'antd';
 import logo from '../../images/logo.png';
 import engenheiro from '../../images/engenheiro.png';
 import { Container, Header, FormLayout, CommentLayout } from './styles';
+import { api } from '../../services/api';
 
 export default function Chat() {
   const { Content } = Layout;
@@ -11,15 +12,34 @@ export default function Chat() {
 
   const [newMessage, setNewMessage] = useState('');
 
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      author: 'Francisco',
-      type: 'bot',
-      avatar: <Avatar src={engenheiro} />,
-      content: 'Olá, bem vindo, por favor informe qual o tipo de edital.',
-    },
-  ]);
+  const [messages, setMessages] = useState([]);
+
+  const [context, setContext] = useState({});
+
+  // When component mount
+  useEffect(() => {
+    async function sendFirstMessage() {
+      const response = await api.post('/chat', {
+        message: 'Olá',
+      });
+
+      const { newContext, output } = response.data;
+      const { text } = output;
+
+      setContext(newContext);
+      setMessages([
+        {
+          id: 1,
+          author: 'Francisco',
+          type: 'bot',
+          avatar: <Avatar src={engenheiro} />,
+          content: text.join('<br/>'),
+        },
+      ]);
+    }
+
+    sendFirstMessage();
+  }, []);
 
   function handleSubmit() {
     setMessages([
@@ -61,9 +81,8 @@ export default function Chat() {
         >
           {messages.map(message => {
             return (
-              <CommentLayout type={message.type}>
+              <CommentLayout key={message.id} type={message.type}>
                 <Comment
-                  key={message.id}
                   author={<>{message.author}</>}
                   avatar={message.avatar}
                   content={<p>{message.content}</p>}
