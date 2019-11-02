@@ -41,7 +41,8 @@ export default function Chat() {
     sendFirstMessage();
   }, []);
 
-  function handleSubmit() {
+  async function handleSubmit() {
+    console.log(messages);
     setMessages([
       ...messages,
       {
@@ -53,12 +54,34 @@ export default function Chat() {
       },
     ]);
 
+    console.log(messages);
+
     setTimeout(() => {
       window.document
         .getElementById('messages')
         .scrollTo(0, window.document.getElementById('messages').scrollHeight);
     });
     setNewMessage('');
+
+    const response = await api.post('/chat', {
+      message: newMessage,
+      context,
+    });
+
+    const { newContext, output } = response.data;
+    const { text } = output;
+
+    setContext(newContext);
+    setMessages([
+      ...messages,
+      {
+        id: messages.length + 1,
+        author: 'Francisco',
+        type: 'bot',
+        avatar: <Avatar src={engenheiro} />,
+        content: text.join('<br/>'),
+      },
+    ]);
   }
 
   return (
